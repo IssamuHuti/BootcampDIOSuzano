@@ -71,6 +71,7 @@ def verificar_usuario():
         ==> ''')
         if confirmar_criar_usuario == 's':
             criar_usuario()
+            criar_conta()
         else:
             print('Digite o usuário corretamente!')
 
@@ -111,7 +112,7 @@ def criar_usuario():
                     print('Digite somente 11 dígitos!')
 
             for _, informacao in dados_usuarios.items():
-                if cpf in informacao['cpf']:
+                if cpf == informacao['cpf']:
                     cpf_cadastrado = True
 
             if cpf_cadastrado == True:
@@ -136,8 +137,62 @@ def criar_usuario():
                 break
 
 def criar_conta():
-    ...
+    global contas_usuarios, usuarios, sequencia_contas, saldo, numero_operacoes
 
+    AGENCIAS = ('0001', '0002', '0003')
+    contas = {}
+    conta = ''
+
+    print('USUÁRIOS')
+    for individuo in usuarios:
+        print(individuo)
+
+    while True:
+        cadastrar_conta_usuario = input('Informe em qual usuário deseja cadastrar a nova conta:')
+        if cadastrar_conta_usuario in usuarios:
+            break
+        else:
+            print('Usuário não cadastrado')
+
+    while True:
+        agencia = int(input('''
+Em qual agência será criada a conta:
+1 - 0001
+2 - 0002
+3 - 0003
+==> '''))
+    
+        if agencia == 1:
+            conta += AGENCIAS[0]
+            break
+        elif agencia == 2:
+            conta += AGENCIAS[1]
+            break
+        elif agencia == 3:
+            conta += AGENCIAS[2]
+            break
+        else:
+            print('Agencia inexistente, escolha uma das agencias cadastradas!')
+
+    if agencia == 1:
+        sequencia_contas[0] += 1
+
+        conta += (5 - len(str(sequencia_contas[0]))) * '0' + str(sequencia_contas[0])
+        contas[conta] = [saldo, numero_operacoes]
+
+    elif agencia == 2:
+        sequencia_contas[1] += 1
+
+        conta += (5 - len(str(sequencia_contas[1]))) * '0' + str(sequencia_contas[1])
+        contas[conta] = [saldo, numero_operacoes]
+    
+    elif agencia == 3:
+        sequencia_contas[2] += 1
+
+        conta += (5 - len(str(sequencia_contas[2]))) * '0' + str(sequencia_contas[2])
+        contas[conta] = [saldo, numero_operacoes]
+        
+    contas_usuarios[cadastrar_conta_usuario] = contas
 
 menu = """
 [d] Depositar
@@ -166,6 +221,7 @@ dados_usuarios = {}
 cpf_cadastrado = False
 usuario_informado = ''
 contas_usuarios = {} # {usuario: {conta1: [saldo, numero_operacoes]}, {conta2: [saldo, numero_operacoes]}, {conta3: [saldo, numero_operacoes]}}
+sequencia_contas = [0, 0, 0]
 
 
 while True:
@@ -185,6 +241,7 @@ while True:
             continue
     elif criar_ou_acessar == 'c':
         criar_usuario()
+        criar_conta()
     else:
         break
 
