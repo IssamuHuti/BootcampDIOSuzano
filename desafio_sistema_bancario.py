@@ -16,22 +16,29 @@ def tela_opcoes(menu, hoje, numero_operacoes):
     print()
     return opcao
 
-def depositar():
-    global LIMITE_OPERACOES, numero_operacoes, saldo, extrato, hora
+def depositar(usuario_informado, conta_informado):
+    global LIMITE_OPERACOES, hora, contas_usuarios
 
-    deposito = float(input('Informe o valor a depositar: '))
-    if (deposito > 0) and (numero_operacoes < LIMITE_OPERACOES):
-        saldo += deposito
-        print(f'Deposito de R$ {deposito:.2f} efetuado com sucesso!')
-        extrato += f'{hora}  Deposito {deposito:10.2f}\n'
-        numero_operacoes += 1
-    elif numero_operacoes >= LIMITE_OPERACOES:
-        print('Limite de operações diárias atingidas, tente novamente em outro dia!')
-    else:
-        print('Valor inválido!')
+    while True:
+        deposito = float(input('Informe o valor a depositar: '))
 
-def sacar():
-    global LIMITE_OPERACOES, numero_operacoes, saldo, extrato, hora
+        if type(deposito) == int or type(deposito) == float:
+            if (deposito > 0) and (contas_usuarios[usuario_informado][conta_informado][1] < LIMITE_OPERACOES):
+                contas_usuarios[usuario_informado][conta_informado][0] += deposito
+                print(f'Deposito de R$ {deposito:.2f} efetuado com sucesso!')
+                contas_usuarios[usuario_informado][conta_informado][3] += f'{hora}  Deposito {deposito:10.2f}\n'
+                contas_usuarios[usuario_informado][conta_informado][1] += 1
+                break
+            elif contas_usuarios[usuario_informado][conta_informado][1] >= LIMITE_OPERACOES:
+                print('Limite de operações diárias atingidas, tente novamente em outro dia!')
+            else:
+                print('Valor inválido!')
+        
+        else:
+            print('Informe números acima de 0')
+
+def sacar(usuario_informado, conta_informado):
+    global LIMITE_OPERACOES, hora, contas_usuarios
 
     saque = float(input('Informe o valor a sacar: '))
 
@@ -39,44 +46,65 @@ def sacar():
         print('Valor inválido!')
     elif saque > LIMITE:
         print(f'Pedido de saque excedeu o limite, solicite um valor abaixo do limite de {LIMITE:.2f}!')
-    elif numero_operacoes == LIMITE_OPERACOES:
+    elif contas_usuarios[usuario_informado][conta_informado][1] == LIMITE_OPERACOES:
         print(f'Limite de operações diárias atingidas, tente novamente em outro dia!')
-    elif (saque <= saldo) and (numero_operacoes < LIMITE_OPERACOES) and (saque <= LIMITE):
-        saldo -= saque
+    elif (saque <= contas_usuarios[usuario_informado][conta_informado][0]) and (contas_usuarios[usuario_informado][conta_informado][1] < LIMITE_OPERACOES) and (saque <= LIMITE):
+        contas_usuarios[usuario_informado][conta_informado][0] -= saque
         print(f'Saque de R$ {saque:.2f} realizado com sucesso!')
-        extrato += f'{hora}  Saque    {saque:10.2f}\n'
-        numero_operacoes += 1
+        contas_usuarios[usuario_informado][conta_informado][3] += f'{hora}  Saque    {saque:10.2f}\n'
+        contas_usuarios[usuario_informado][conta_informado][1] += 1
     else:
         print('Não foi possível realizar o saque, reveja o saldo antes de realizar o saque novamente!')
 
-def mostrar_extrato():
-    global saldo, extrato
+def mostrar_extrato(usuario_informado, conta_informado):
+    global contas_usuarios
 
-    if not extrato:
+    if not contas_usuarios[usuario_informado][conta_informado][3]:
         print('Extrato bancário\n')
-        print(f'                  Saldo    {saldo:10.2f}')
+        print(f'                  Saldo    {contas_usuarios[usuario_informado][conta_informado][0]:10.2f}')
     else:
         print('Extrato bancário\n')
-        print(extrato)
-        print(f'                  Saldo    {saldo:10.2f}')
+        print(contas_usuarios[usuario_informado][conta_informado][3])
+        print(f'                  Saldo    {contas_usuarios[usuario_informado][conta_informado][0]:10.2f}')
 
 
 def verificar_usuario():
-    global usuario_informado, usuarios
+    global usuario_informado, contas_usuarios
 
-    if usuario_informado not in usuarios:
-        confirmar_criar_usuario = input('''Usuário não cadastrado, deseja cadastrar o usuário? 
-        [s] - Sim
-        [n] - Não
-        ==> ''')
-        if confirmar_criar_usuario == 's':
-            criar_usuario()
-            criar_conta()
+    usuario_ok = False
+    conta_ok = False
+
+    while usuario_ok == False:
+        if usuario_informado not in contas_usuarios.keys():
+            confirmar_criar_usuario = input('''Usuário não cadastrado, deseja cadastrar o usuário? 
+            [s] - Sim
+            [n] - Não
+            ==> ''')
+            if confirmar_criar_usuario == 's':
+                criar_usuario()
+            else:
+                print('Digite o usuário corretamente!')
+                usuario_informado = input('Usuário: ')
         else:
-            print('Digite o usuário corretamente!')
+            usuario_ok = True
+            break
 
-    else:
-        print(f'Seja Bem-vindo {usuario_informado}')
+    while conta_ok == False:
+        if conta_informado not in contas_usuarios[usuario_informado].keys():
+            confirmar_criar_conta = input('''Conta não cadastrado, deseja cadastrar a Conta? 
+            [s] - Sim
+            [n] - Não
+            ==> ''')
+            if confirmar_criar_conta == 's':
+                criar_conta()
+            else:
+                print('Digite a conta corretamente!')
+                conta_informado = input('Conta: ')
+        else:
+            conta_ok == True
+            break
+    
+    print(f'Bem vindo {usuario_informado}, {conta_informado}')
 
 def criar_usuario():
     global dados_usuarios, usuarios, cpf_cadastrado, usuario_informado
@@ -137,11 +165,13 @@ def criar_usuario():
                 break
 
 def criar_conta():
-    global contas_usuarios, usuarios, sequencia_contas, saldo, numero_operacoes
+    global contas_usuarios, usuarios, sequencia_contas
 
     AGENCIAS = ('0001', '0002', '0003')
     contas = {}
     conta = ''
+    saldo = 0
+    numero_operacoes = 0
 
     print('USUÁRIOS')
     for individuo in usuarios:
@@ -178,21 +208,22 @@ Em qual agência será criada a conta:
         sequencia_contas[0] += 1
 
         conta += (5 - len(str(sequencia_contas[0]))) * '0' + str(sequencia_contas[0])
-        contas[conta] = [saldo, numero_operacoes]
+        contas[conta] = [saldo, numero_operacoes, conta, '']
 
     elif agencia == 2:
         sequencia_contas[1] += 1
 
         conta += (5 - len(str(sequencia_contas[1]))) * '0' + str(sequencia_contas[1])
-        contas[conta] = [saldo, numero_operacoes]
+        contas[conta] = [saldo, numero_operacoes, conta, '']
     
     elif agencia == 3:
         sequencia_contas[2] += 1
 
         conta += (5 - len(str(sequencia_contas[2]))) * '0' + str(sequencia_contas[2])
-        contas[conta] = [saldo, numero_operacoes]
+        contas[conta] = [saldo, numero_operacoes, conta, '']
         
     contas_usuarios[cadastrar_conta_usuario] = contas
+
 
 menu = """
 [d] Depositar
@@ -208,10 +239,7 @@ menu2 = """
 
 => """
 
-saldo = 0
 LIMITE = 500
-extrato = ""
-numero_operacoes = 0
 LIMITE_OPERACOES = 10
 hoje = data_hora_hoje()
 hora = hora_operacao(hoje)
@@ -234,14 +262,23 @@ while True:
     ==> ''')
 
     if criar_ou_acessar == 'a':
+        if contas_usuarios != {}:
+            print('CONTAS')
+            for usuario, contas in contas_usuarios.items():
+                for conta in contas.keys():
+                    print(f'{usuario} - {conta}')
+
         usuario_informado = input('Usuário: ')
+        conta_informado = input('Conta: ')
         verificar_usuario()
 
         if usuario_informado not in usuarios:
             continue
+
     elif criar_ou_acessar == 'c':
         criar_usuario()
         criar_conta()
+        continue
     else:
         break
 
@@ -249,19 +286,19 @@ while True:
         continue
 
     while True:
-        if numero_operacoes < LIMITE_OPERACOES:
-            opcao_menu = tela_opcoes(menu, hoje, numero_operacoes)
+        if contas_usuarios[usuario_informado][conta_informado][1] < LIMITE_OPERACOES:
+            opcao_menu = tela_opcoes(menu, hoje, contas_usuarios[usuario_informado][conta_informado][1])
         else:
-            opcao_menu = tela_opcoes(menu2, hoje, numero_operacoes)
+            opcao_menu = tela_opcoes(menu2, hoje, contas_usuarios[usuario_informado][conta_informado][1])
 
         if opcao_menu == "d":
-            depositar()
+            depositar(usuario_informado, conta_informado)
 
-        elif (opcao_menu == "s") and (numero_operacoes < LIMITE_OPERACOES):
-            sacar()
+        elif (opcao_menu == "s") and (contas_usuarios[usuario_informado][conta_informado][1] < LIMITE_OPERACOES):
+            sacar(usuario_informado, conta_informado)
 
         elif opcao_menu == "e":
-            mostrar_extrato()
+            mostrar_extrato(usuario_informado, conta_informado)
 
         elif opcao_menu == "q":
             break
