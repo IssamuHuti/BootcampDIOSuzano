@@ -69,7 +69,7 @@ def mostrar_extrato(usuario_informado, conta_informado):
 
 
 def verificar_usuario():
-    global usuario_informado, contas_usuarios
+    global usuario_informado, contas_usuarios, conta_informado
 
     usuario_ok = False
     conta_ok = False
@@ -89,8 +89,9 @@ def verificar_usuario():
             usuario_ok = True
             break
 
+    print(contas_usuarios[usuario_informado].keys())
     while conta_ok == False:
-        if conta_informado not in contas_usuarios[usuario_informado].keys():
+        if str(conta_informado) not in contas_usuarios[usuario_informado].keys():
             confirmar_criar_conta = input('''Conta não cadastrado, deseja cadastrar a Conta? 
             [s] - Sim
             [n] - Não
