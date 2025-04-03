@@ -1,4 +1,5 @@
 import datetime
+from abc import ABC, abstractclassmethod, abstractproperty
 
 def data_hora_hoje():
     data_hoje = datetime.datetime.today()
@@ -225,6 +226,32 @@ Em qual agência será criada a conta:
         
     contas_usuarios[cadastrar_conta_usuario] = contas
 
+class Clientes:
+    pass
+
+class PessoaFisica(Clientes):
+    pass
+
+class Conta:
+    def __init__(self, saldo, ):
+        pass
+
+class ContaCorrente(Conta):
+    pass
+
+class Historico:
+    pass
+
+class Transacoes(ABC):
+    pass
+
+class Saque(Transacoes):
+    pass
+
+class Deposito(Transacoes):
+    pass
+
+
 
 menu = """
 [d] Depositar
@@ -240,8 +267,7 @@ menu2 = """
 
 => """
 
-LIMITE = 500
-LIMITE_OPERACOES = 10
+LIMITE, LIMITE_OPERACOES = ContaCorrente(500, 10)
 hoje = data_hora_hoje()
 hora = hora_operacao(hoje)
 usuarios = []
